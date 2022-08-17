@@ -1,56 +1,107 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable prettier/prettier */
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { Course } from './interfaces/course.interface';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { Repository } from 'typeorm';
+import { UpdateCourseDto } from './dto/update-course.dto';
+import { CreateCourseDto } from './dto/create-course.dto';
+import { Course } from './entities/course.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Tag } from './entities/tag.entity';
 
 @Injectable()
 export class CoursesService {
+  constructor(
+    @InjectRepository(Course)
+    private coursesRepository: Repository<Course>,
 
-    private courses: Course[] = [
+    @InjectRepository(Tag)
+    private tagsRepository: Repository<Tag>,
+  ) {}
 
-    {
-        id: 1,
-        name: 'Fundamentos do NestJS',
-        description: '',
-        tags: ['Node.js', "Nest.js", "JavaScript"]
-     }
- ];
+  findAll() {
+    return this.coursesRepository.find();
+    // find método do typeORM que buusca todos os dados
+  }
 
- findAll(){
-    return this.courses
- }
+  // Recebe um parâmetro que é um id, terá que procurar em courses o id que foi passado.
+  async findOne(id: number) {
+    // Recebe um objeto de opçoes
+    const course = await this.coursesRepository.findOne({
+      where: { id },
+    });
 
- // Recebe um parâmetro que é um id, terá que procurar em courses o id que foi passado.
- findOne(id: string){
-    // faz um find método para buscar itens em um array em JS, onde para cada course que encontrar dentro desse array
-    // onde verifico se o id de course, foi extamente ao que foi passado.
-    const course =  this.courses.find((course: Course) => course.id === Number(id));
     // se não existir curso
-    if(!course){
-        throw new HttpException(`Curso ID ${id} not found`, HttpStatus.NOT_FOUND)
+    if (!course) {
+      throw new HttpException(`Curso ID ${id} not found`, HttpStatus.NOT_FOUND);
     }
-    return course
- }
-
-
- create(createCourseDto: any){
-    this.courses.push(createCourseDto);
- }
-
-
- // Tem que encontrar primeiramete o id, para depois jogar os dados neles
- // findeIndex pegar a posição para cada um que passar, vai comparar o course.id com id que recebemos
- update(id: string, updateCourseDto: any){
-    const indexCourse = this.courses.findIndex((course: Course) => course.id === Number(id));
-    this.courses[indexCourse] = updateCourseDto;
- }
+    return course;
+  }
 
 
 
- remove(id: string){
-    const indexCourse = this.courses.findIndex((course: Course) => course.id === Number(id));
+  async create(createCourseDto: CreateCourseDto) {
+    const tags = await Promise.all(
+      createCourseDto.tags.map((name) => this.preloadTagByName(name)),
+    );
+    const course = this.coursesRepository.create({
+      ...createCourseDto,
+      tags,
+    });
+    return this.coursesRepository.save(course);
+  }
 
-    if(indexCourse >= 0){
-        this.courses.splice(indexCourse, 1);
+
+
+  // Tem que encontrar primeiramete o id, para depois jogar os dados neles
+  // findeIndex pegar a posição para cada um que passar, vai comparar o course.id com id que recebemos
+  async update(id: string, updateCourseDto: UpdateCourseDto) {
+    const tags =
+      updateCourseDto.tags &&
+      (await Promise.all(
+        updateCourseDto.tags.map((name) => this.preloadTagByName(name)),
+      ));
+    const course = await this.coursesRepository.preload({
+      id: +id, // convertendo o id pra numerico
+      ...updateCourseDto,
+      tags,
+    });
+
+    if (!course) {
+      throw new NotFoundException(`Course ID ${id} not found`);
     }
- }
+
+    return this.coursesRepository.save(course);
+  }
+
+
+
+
+  async remove(id: number) {
+    const course = await this.coursesRepository.findOne({
+      where: { id },
+    });
+
+    if (!course) {
+      throw new NotFoundException(`Course ID ${id} not found`);
+    }
+
+    return this.coursesRepository.remove(course);
+  }
+
+  private async preloadTagByName(name: string): Promise<Tag> {
+    const tag = await this.tagsRepository.findOne({ where: { name } });
+    if (tag) {
+      return tag;
+    }
+    return this.tagsRepository.create({ name });
+  }
+
+
 }

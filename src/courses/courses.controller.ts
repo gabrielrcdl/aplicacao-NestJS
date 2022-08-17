@@ -8,39 +8,33 @@ import { UpdateCourseDto } from './dto/update-course.dto';
 
 @Controller('courses')
 export class CoursesController {
+  constructor(private readonly coursesService: CoursesService) {}
 
-
-    constructor(private readonly coursesServices: CoursesService,){}
-
-
-    
   @Get()
-    findAll(){
-        return this.coursesServices.findAll();
-    }
+  findAll() {
+    return this.coursesService.findAll();
+  }
 
-    @Get(':id')
-    findOne(@Param('id') id: string){
-        return this.coursesServices.findOne(id);
-    }
+  @Get(':id')
+  findOne(@Param('id') id: number) {
+    return this.coursesService.findOne(id);
+  }
 
-    @Post()
-    // Já sei o que de fato receber no corpo da informação que o usuário está enviando do front para cá
-    create(@Body() createCourseDto: CreateCourseDto){
-        return this.coursesServices.create(createCourseDto);
-    }
+  @Post()
+  create(@Body() createCourseDto: CreateCourseDto) {
+    return this.coursesService.create(createCourseDto);
+  }
 
-    @Patch(':id')
-    update(@Param('id') id: string, @Body() updateCourseDto: UpdateCourseDto){
-       return this.coursesServices.update(id, updateCourseDto);
-    }
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateCourseDto: UpdateCourseDto) {
+    return this.coursesService.update(id, updateCourseDto);
+  }
 
-    @Delete(':id')
-    remove(@Param('id') id: string){
-        return this.coursesServices.remove(id);
-    }
+  @Delete(':id')
+  remove(@Param('id') id: number) {
+    return this.coursesService.remove(id);
+  }
 }
-
 
 
 // Lógica aplicada sem o uso de um service

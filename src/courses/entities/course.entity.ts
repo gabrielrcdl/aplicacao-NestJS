@@ -20,6 +20,7 @@ export class Course {
   @Column()
   description: string;
 
+  // Identifica o lado principal desta relação
   @JoinTable()
   // Um tipo informando com qual entity vou me relacionar, segundo parametro na outra entity qual paramentro vou criar
   @ManyToMany(() => Tag, (tag: Tag) => tag.courses, { cascade: true })

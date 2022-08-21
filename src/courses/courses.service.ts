@@ -26,7 +26,9 @@ export class CoursesService {
   ) {}
 
   findAll() {
-    return this.coursesRepository.find();
+    return this.coursesRepository.find({
+      relations: ['tags']
+    });
     // find método do typeORM que buusca todos os dados
   }
 
@@ -34,7 +36,7 @@ export class CoursesService {
   async findOne(id: number) {
     // Recebe um objeto de opçoes
     const course = await this.coursesRepository.findOne({
-      where: { id },
+      relations: ['tags']
     });
 
     // se não existir curso
@@ -44,20 +46,17 @@ export class CoursesService {
     return course;
   }
 
-
-
   async create(createCourseDto: CreateCourseDto) {
     const tags = await Promise.all(
       createCourseDto.tags.map((name) => this.preloadTagByName(name)),
     );
+
     const course = this.coursesRepository.create({
       ...createCourseDto,
       tags,
     });
     return this.coursesRepository.save(course);
   }
-
-
 
   // Tem que encontrar primeiramete o id, para depois jogar os dados neles
   // findeIndex pegar a posição para cada um que passar, vai comparar o course.id com id que recebemos
@@ -67,6 +66,7 @@ export class CoursesService {
       (await Promise.all(
         updateCourseDto.tags.map((name) => this.preloadTagByName(name)),
       ));
+
     const course = await this.coursesRepository.preload({
       id: +id, // convertendo o id pra numerico
       ...updateCourseDto,
@@ -79,9 +79,6 @@ export class CoursesService {
 
     return this.coursesRepository.save(course);
   }
-
-
-
 
   async remove(id: number) {
     const course = await this.coursesRepository.findOne({
@@ -102,6 +99,4 @@ export class CoursesService {
     }
     return this.tagsRepository.create({ name });
   }
-
-
 }

@@ -15,7 +15,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       username: 'postgres',
       password: 'root',
       database: 'cursonestjs',
-      //entities: [__dirname + '/**/*.entity.js'],
+      entities: [__dirname + '/**/*.entity.js'],
       autoLoadEntities: false,
       synchronize: false,
     }),

@@ -6,7 +6,7 @@ services:
     entrypoint: .docker/entrypoint.sh
     container_name: cursonestjs-app
     ports:
-      - '3000:3000'
+      - '3001:3000'
 
     volumes:
       - .:/home/node/app
@@ -22,7 +22,7 @@ services:
     ports:
       - '5432:5432'
     volumes:
-      - .docker/dbdata:/var/lib/postgresql/data
+      - ./postgres- data:/var/lib/postgresql/data 777
     environment:
       - POSTGRES_PASSWORD=root
       - POSTGRES_DB=cursonestjs
@@ -39,4 +39,3 @@ services:
 
     depends_on:
       - db
-

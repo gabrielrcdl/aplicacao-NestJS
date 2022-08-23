@@ -1,5 +1,3 @@
-# Quando o container entrar em execução irá rodar este script
-
 #!/bin/bash
 
 npm install

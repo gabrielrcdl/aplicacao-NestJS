@@ -1,4 +1,5 @@
-/* eslint-disable prettier/prettier */
+
+
 
 module.exports = {
   type: 'postgres',
